@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="id"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menjadi Jurnalis Muda: Petualangan 5W+1H (8 Kelompok)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&amp;family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            yellow: '#FACC15',
+                            blue: '#3B82F6',
+                            pink: '#EC4899',
+                            green: '#10B981',
+                            purple: '#8B5CF6',
+                            orange: '#F97316',
+                            bg: '#FFFBEB'
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['"Fredoka One"', 'cursive'],
+                        body: ['"Plus Jakarta Sans"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FEF3C7;
+            background-image: radial-gradient(#FDE68A 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        .font-heading {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        /* Custom pawn glow */
+        .pawn-active {
+            filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.95));
+            transform: scale(1.15);
+            z-index: 30 !important;
+        }
+
+        .step-node {
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .step-node:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        /* Dragging styles */
+        .dragging {
+            opacity: 0.6;
+            transform: scale(1.2);
+            cursor: grabbing !important;
+        }
+
+        /* Comic style borders */
+        .comic-border {
+            border: 3px solid #1E293B;
+            box-shadow: 4px 4px 0px #1E293B;
+        }
+
+        .comic-border-lg {
+            border: 4px solid #1E293B;
+            box-shadow: 6px 6px 0px #1E293B;
+        }
+
+        .comic-btn {
+            transition: all 0.1s ease;
+        }
+        .comic-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #1E293B;
+        }
+
+        /* Custom scrollbar for 8 teams list */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #F1F5F9;
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between p-2 sm:p-4 md:p-6 select-none">
+
+    <!-- TOP HEADER -->
+    <header class="max-w-7xl w-full mx-auto mb-3">
+        <div class="bg-white rounded-2xl p-3 sm:p-4 comic-border-lg flex flex-col md:flex-row items-center justify-between gap-3">
+            
+            <!-- Title & Subtitle -->
+            <div class="flex items-center gap-3 text-center md:text-left">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-400 rounded-xl comic-border flex items-center justify-center text-2xl text-slate-900 shrink-0">
+                    <i class="fa-solid fa-newspaper"></i>
+                </div>
+                <div>
+                    <h1 class="font-heading text-xl sm:text-2xl md:text-3xl text-slate-900 tracking-wide leading-none">PAPAN PETUALANGAN JURNALISTIK</h1>
+                    <p class="text-xs sm:text-sm font-semibold text-amber-600 mt-1">Menggali Fakta, Menulis Berita, Membuat Vlog Berita</p>
+                </div>
+            </div>
+
+            <!-- Reminder Card/Dadu Manual Box -->
+            <div class="bg-amber-100 rounded-xl p-3 comic-border flex items-center gap-3 max-w-md w-full md:w-auto">
+                <div class="text-3xl text-slate-800 shrink-0">
+                    <i class="fa-solid fa-dice text-indigo-600"></i>
+                </div>
+                <div class="text-xs">
+                    <span class="font-bold text-slate-900 block text-sm">Dadu &amp; Kartu Manual </span>
+                    <span class="text-slate-700">
+                        Murid mengocok dadu &amp; mengambil kartu secara fisik di meja. Papan ini memantau posisi pion 8 kelompok digital di kelas.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME AREA -->
+    <main class="max-w-7xl w-full mx-auto flex-grow flex flex-col lg:flex-row gap-4">
+
+        <!-- BOARD DISPLAY CONTAINER -->
+        <div class="lg:w-3/4 bg-slate-900/5 rounded-3xl p-3 sm:p-5 comic-border-lg relative flex flex-col justify-between bg-white overflow-hidden min-h-[580px]">
+            
+            <!-- Turn & Status Bar inside Board -->
+            <div class="flex flex-wrap items-center justify-between gap-2 z-10 mb-2">
+                <!-- Current Turn Banner -->
+                <div id="turnBanner" class="bg-indigo-600 text-white px-4 py-2 rounded-xl comic-border flex items-center gap-2 shadow-sm font-bold text-sm sm:text-base">
+                    <i class="fa-solid fa-flag-checkered"></i>
+                    <span>Giliran: <span id="currentTeamName" class="underline decoration-wavy">Tim Kamera</span></span>
+                </div>
+
+                <!-- Step Guide for Active Node -->
+                <div id="stepInstruction" class="bg-amber-50 px-3 py-1.5 rounded-xl comic-border text-xs font-semibold text-amber-900 border-amber-300">
+                    <i class="fa-solid fa-compass text-amber-600"></i> Kotak Aktif: <span id="activeStepText" class="font-bold text-slate-900">1. Pahami Misi</span>
+                </div>
+            </div>
+
+            <!-- SVG PATH OVERLAY & STEP NODES GRID -->
+            <div id="boardContainer" class="relative w-full flex-grow min-h-[460px] flex items-center justify-center">
+
+                <!-- 12 STEP NODES GRID / LAYOUT -->
+                <div class="relative w-full h-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3.5 p-1 z-10">
+
+                    <!-- STEP 1: MULAI & PAHAMI MISI -->
+                    <div data-step="1" class="step-node bg-emerald-100 border-2 border-emerald-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-emerald-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-emerald-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">1</span>
+                            <span class="text-[10px] font-bold text-emerald-800 uppercase px-1.5 py-0.5 bg-emerald-200 rounded">Mulai</span>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-emerald-900 text-xs sm:text-sm">PAHAMI MISI</div>
+                            <p class="text-[10px] text-emerald-700 leading-tight line-clamp-2">Baca misi &amp; pahami aturan permainan.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-emerald-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 2: LEMPAR DADU -->
+                    <div data-step="2" class="step-node bg-amber-100 border-2 border-amber-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-amber-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-amber-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">2</span>
+                            <i class="fa-solid fa-dice-five text-amber-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-amber-900 text-xs sm:text-sm">LEMPAR DADU</div>
+                            <p class="text-[10px] text-amber-700 leading-tight line-clamp-2">Lempar dadu 5W+1H penentu kategori.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-amber-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 3: AMBIL KARTU -->
+                    <div data-step="3" class="step-node bg-sky-100 border-2 border-sky-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-sky-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-sky-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">3</span>
+                            <i class="fa-solid fa-layer-group text-sky-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-sky-900 text-xs sm:text-sm">AMBIL KARTU</div>
+                            <p class="text-[10px] text-sky-700 leading-tight line-clamp-2">Ambil kartu sesuai kategori hasil dadu.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-sky-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 4: SUSUN PERTANYAAN -->
+                    <div data-step="4" class="step-node bg-purple-100 border-2 border-purple-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-purple-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-purple-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">4</span>
+                            <i class="fa-solid fa-pen-to-square text-purple-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-purple-900 text-xs sm:text-sm">SUSUN PERTANYAAN</div>
+                            <p class="text-[10px] text-purple-700 leading-tight line-clamp-2">Buat 1-2 pertanyaan tepat &amp; relevan.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-purple-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 5: WAWANCARA -->
+                    <div data-step="5" class="step-node bg-emerald-100 border-2 border-emerald-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-emerald-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-emerald-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">5</span>
+                            <i class="fa-solid fa-microphone-lines text-emerald-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-emerald-900 text-xs sm:text-sm">WAWANCARA</div>
+                            <p class="text-[10px] text-emerald-700 leading-tight line-clamp-2">Wawancara narasumber kelompok lain.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-emerald-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 6: CATAT INFORMASI -->
+                    <div data-step="6" class="step-node bg-pink-100 border-2 border-pink-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-pink-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-pink-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">6</span>
+                            <i class="fa-solid fa-book-open text-pink-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-pink-900 text-xs sm:text-sm">CATAT INFORMASI</div>
+                            <p class="text-[10px] text-pink-700 leading-tight line-clamp-2">Tulis jawaban penting di lembar catatan.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-pink-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 7: REPORTER POWER -->
+                    <div data-step="7" class="step-node bg-violet-100 border-2 border-violet-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-violet-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-violet-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">7</span>
+                            <i class="fa-solid fa-bolt text-amber-500 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-violet-900 text-xs sm:text-sm">REPORTER POWER</div>
+                            <p class="text-[10px] text-violet-700 leading-tight line-clamp-2">Gunakan kartu ini jika ada untuk bantuan.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-violet-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 8: TUKAR PERAN -->
+                    <div data-step="8" class="step-node bg-cyan-100 border-2 border-cyan-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-cyan-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-cyan-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">8</span>
+                            <i class="fa-solid fa-people-arrows text-cyan-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-cyan-900 text-xs sm:text-sm">TUKAR PERAN</div>
+                            <p class="text-[10px] text-cyan-700 leading-tight line-clamp-2">Ganti peran jurnalis &amp; narasumber.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-cyan-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 9: CEK FAKTA 5W+1H -->
+                    <div data-step="9" class="step-node bg-yellow-100 border-2 border-yellow-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-yellow-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-yellow-500 text-slate-900 font-heading rounded-full flex items-center justify-center text-xs comic-border">9</span>
+                            <i class="fa-solid fa-magnifying-glass-chart text-yellow-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-yellow-900 text-xs sm:text-sm">CEK FAKTA 5W+1H</div>
+                            <p class="text-[10px] text-yellow-800 leading-tight line-clamp-2">Pastikan informasi mencakup 5W+1H!</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-yellow-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 10: SELESAI PERMAINAN -->
+                    <div data-step="10" class="step-node bg-rose-100 border-2 border-rose-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-rose-200">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-rose-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border">10</span>
+                            <i class="fa-solid fa-flag text-rose-600 text-base"></i>
+                        </div>
+                        <div class="my-1">
+                            <div class="font-heading text-rose-900 text-xs sm:text-sm">SELESAI PERMAINAN</div>
+                            <p class="text-[10px] text-rose-700 leading-tight line-clamp-2">Fakta siap disusun jadi berita.</p>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-rose-300 pt-1"></div>
+                    </div>
+
+                    <!-- STEP 11 / 12: VLOG BERITA -->
+                    <div data-step="12" class="step-node bg-orange-100 border-2 border-orange-500 rounded-2xl p-2 sm:p-2.5 comic-border cursor-pointer flex flex-col justify-between relative group hover:bg-orange-200 sm:col-span-2 md:col-span-2">
+                        <div class="flex items-center justify-between">
+                            <span class="w-7 h-7 bg-orange-500 text-white font-heading rounded-full flex items-center justify-center text-xs comic-border"></span>
+                            <span class="text-[10px] font-bold text-orange-800 uppercase px-1.5 py-0.5 bg-orange-200 rounded">Tujuan Akhir</span>
+                        </div>
+                        <div class="my-1 flex items-center gap-2">
+                            <i class="fa-solid fa-video text-orange-600 text-xl shrink-0"></i>
+                            <div>
+                                <div class="font-heading text-orange-900 text-xs sm:text-sm">KEMBANGKAN MENJADI VLOG BERITA</div>
+                                <p class="text-[10px] text-orange-700 leading-tight">Ubah berita menjadi naskah &amp; karya vlog berita!</p>
+                            </div>
+                        </div>
+                        <div class="pawn-slot flex flex-wrap gap-1 min-h-[36px] items-center justify-start border-t border-orange-300 pt-1"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Reference Card Footer Legend (Bank 5W+1H) -->
+            <div class="mt-2 pt-2 border-t-2 border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="font-bold text-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-book-bookmark text-indigo-600"></i>
+                    <span>BANK 5W+1H:</span>
+                </div>
+                <div class="flex flex-wrap gap-1.5 font-semibold text-[11px]">
+                    <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-300">Apa (What)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-300">Siapa (Who)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-300">Di mana (Where)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">Kapan (When)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-300">Mengapa (Why)</span>
+                    <span class="px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-300">Bagaimana (How)</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDEBAR: CONTROLS & 8 TEAMS MANAGEMENT -->
+        <div class="lg:w-1/4 flex flex-col gap-3">
+
+            <!-- Active Team Control Panel -->
+            <div class="bg-white rounded-2xl p-4 comic-border-lg flex flex-col gap-3">
+                <h2 class="font-heading text-lg text-slate-900 flex items-center justify-between border-b-2 border-slate-100 pb-2">
+                    <span><i class="fa-solid fa-gamepad text-indigo-600"></i> Kontrol Kelompok</span>
+                    <span id="turnCounter" class="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-sans font-bold">Tim 1 / 8</span>
+                </h2>
+
+                <!-- Step Forward/Backward Actions -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btnPrev" class="comic-btn bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-xl comic-border text-sm flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-arrow-left"></i> Mundur (-1)
+                    </button>
+                    <button id="btnNext" class="comic-btn bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-3 rounded-xl comic-border text-sm flex items-center justify-center gap-1">
+                        Maju (+1) <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Direct Step Jump Selector -->
+                <div class="flex items-center gap-2">
+                    <label for="stepJumpSelect" class="text-xs font-bold text-slate-700 shrink-0">Lompat ke:</label>
+                    <select id="stepJumpSelect" class="w-full bg-slate-50 border-2 border-slate-300 rounded-xl px-2 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+                        <option value="1">Kotak 1: Pahami Misi</option>
+                        <option value="2">Kotak 2: Lempar Dadu</option>
+                        <option value="3">Kotak 3: Ambil Kartu</option>
+                        <option value="4">Kotak 4: Susun Pertanyaan</option>
+                        <option value="5">Kotak 5: Wawancara</option>
+                        <option value="6">Kotak 6: Catat Informasi</option>
+                        <option value="7">Kotak 7: Reporter Power</option>
+                        <option value="8">Kotak 8: Tukar Peran</option>
+                        <option value="9">Kotak 9: Cek Fakta 5W+1H</option>
+                        <option value="10">Kotak 10: Selesai Permainan</option>
+                        <option value="12">Kotak 12: Vlog Berita</option>
+                    </select>
+                </div>
+
+                <button id="btnPassTurn" class="comic-btn bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold py-2.5 px-3 rounded-xl comic-border text-sm w-full flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-forward-step"></i> Kelompok Selanjutnya
+                </button>
+            </div>
+
+            <!-- Team Roster (Up to 8 Teams) -->
+            <div class="bg-white rounded-2xl p-4 comic-border-lg flex-grow flex flex-col justify-between gap-3 min-h-[260px]">
+                <div>
+                    <div class="flex items-center justify-between border-b-2 border-slate-100 pb-2 mb-2">
+                        <h2 class="font-heading text-base text-slate-900">
+                            <i class="fa-solid fa-users text-amber-500"></i> Daftar 8 Kelompok
+                        </h2>
+                        <button id="btnAddTeam" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-200">
+                            + Tambah Kelompok
+                        </button>
+                    </div>
+
+                    <!-- Scrollable list of 8 teams -->
+                    <div id="teamList" class="flex flex-col gap-1.5 max-h-[250px] overflow-y-auto pr-1 custom-scroll">
+                        <!-- Dynamic teams rendered here -->
+                    </div>
+                </div>
+
+                <!-- Global Reset -->
+                <div class="pt-2 border-t border-slate-100">
+                    <button id="btnResetAll" class="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 py-2 rounded-xl border border-rose-200 transition">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Posisi Semua Pion
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Instructions Box -->
+            <div class="bg-indigo-50 rounded-2xl p-3 comic-border text-xs text-indigo-900 flex flex-col gap-1">
+                <div class="font-bold flex items-center gap-1.5 text-indigo-950">
+                    <i class="fa-solid fa-graduation-cap text-indigo-600 text-sm"></i> Petunjuk Murid:
+                </div>
+                <ol class="list-decimal list-inside space-y-0.5 text-[11px] font-medium text-indigo-800">
+                    <li>Murid mengocok <b>Dadu 5W+1H</b> di meja.</li>
+                    <li>Ambil <b>Kartu Tugas</b> sesuai warna dadu.</li>
+                    <li>Tekan <b>Maju</b> / geser pion ke nomor kotak.</li>
+                    <li>Lakukan wawancara &amp; catat unsur berita!</li>
+                </ol>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-7xl w-full mx-auto mt-3 text-center text-xs font-semibold text-slate-500">Media Pembelajaran Digital Jurnalistik • Petualangan 5W+1H </footer>
+
+    <!-- JAVASCRIPT GAME LOGIC FOR 8 TEAMS -->
+    <script>
+        // 8 Teams Preset Configuration
+        const ALL_TEAM_PRESETS = [
+            { id: 't1', name: 'Tim Kamera', color: 'bg-red-500', border: 'border-red-700', text: 'text-red-500', icon: 'fa-camera-retro' },
+            { id: 't2', name: 'Tim Buku', color: 'bg-blue-500', border: 'border-blue-700', text: 'text-blue-500', icon: 'fa-book' },
+            { id: 't3', name: 'Tim Mic', color: 'bg-emerald-500', border: 'border-emerald-700', text: 'text-emerald-500', icon: 'fa-microphone' },
+            { id: 't4', name: 'Tim Lampu', color: 'bg-amber-500', border: 'border-amber-700', text: 'text-amber-500', icon: 'fa-lightbulb' },
+            { id: 't5', name: 'Tim Pena', color: 'bg-purple-500', border: 'border-purple-700', text: 'text-purple-500', icon: 'fa-pen-nib' },
+            { id: 't6', name: 'Tim Lensa', color: 'bg-pink-500', border: 'border-pink-700', text: 'text-pink-500', icon: 'fa-circle-dot' },
+            { id: 't7', name: 'Tim Audio', color: 'bg-cyan-500', border: 'border-cyan-700', text: 'text-cyan-500', icon: 'fa-headphones' },
+            { id: 't8', name: 'Tim Berita', color: 'bg-orange-500', border: 'border-orange-700', text: 'text-orange-500', icon: 'fa-newspaper' }
+        ];
+
+        // Step instruction texts for 12 nodes
+        const STEP_DESCRIPTIONS = {
+            1: "1. Pahami Misi - Baca misi dan pahami aturan permainan.",
+            2: "2. Lempar Dadu - Lempar dadu 5W+1H untuk menentukan kategori informasi.",
+            3: "3. Ambil Kartu - Ambil kartu sesuai kategori hasil dadu.",
+            4: "4. Susun Pertanyaan - Buat 1-2 pertanyaan yang tepat dan relevan.",
+            5: "5. Wawancara - Lakukan wawancara kepada narasumber (kelompok lain).",
+            6: "6. Catat Informasi - Tuliskan jawaban penting dari narasumber.",
+            7: "7. Reporter Power - Gunakan kartu ini (jika ada) untuk bantuan.",
+            8: "8. Tukar Peran - Sekarang kalian menjadi narasumber & kelompok lain jurnalis.",
+            9: "9. Cek Fakta 5W+1H - Pastikan informasi mencakup Apa, Siapa, Di mana, Kapan, Mengapa, Bagaimana.",
+            10: "10. Selesai Permainan - Mengumpulkan fakta untuk menyusun berita.",
+            12: "12. Vlog Berita - Kembangkan berita menjadi naskah dan karya vlog berita!"
+        };
+
+        // Initialize 8 teams by default
+        let teams = ALL_TEAM_PRESETS.map(preset => ({
+            id: preset.id,
+            name: preset.name,
+            step: 1,
+            colorObj: preset
+        }));
+
+        let activeTeamIndex = 0;
+
+        // Sound Synthesizer via Web Audio API
+        const playSound = (type) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'move') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(320, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(640, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'turn') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.15);
+                } else if (type === 'win') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                }
+            } catch(e) {
+                // Audio context fallback
+            }
+        };
+
+        // Render pawns on board nodes
+        function renderBoardPawns() {
+            document.querySelectorAll('.pawn-slot').forEach(slot => slot.innerHTML = '');
+
+            teams.forEach((team, idx) => {
+                const stepNode = document.querySelector(`[data-step="${team.step}"]`);
+                if (!stepNode) return;
+                const slot = stepNode.querySelector('.pawn-slot');
+
+                // Create Pawn Element
+                const pawn = document.createElement('div');
+                pawn.className = `pawn-element w-6 h-6 sm:w-7 sm:h-7 rounded-full ${team.colorObj.color} text-white comic-border flex items-center justify-center text-[11px] font-bold shadow-md cursor-grab active:cursor-grabbing transition-transform ${idx === activeTeamIndex ? 'pawn-active ring-2 ring-amber-300' : ''}`;
+                pawn.setAttribute('draggable', 'true');
+                pawn.setAttribute('title', `${team.name} (Kotak ${team.step})`);
+                pawn.setAttribute('data-team-id', team.id);
+                pawn.innerHTML = `<i class="fa-solid ${team.colorObj.icon}"></i>`;
+
+                // Drag and Drop event listeners
+                pawn.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', team.id);
+                    pawn.classList.add('dragging');
+                });
+
+                pawn.addEventListener('dragend', () => {
+                    pawn.classList.remove('dragging');
+                });
+
+                slot.appendChild(pawn);
+            });
+
+            updateUIControls();
+        }
+
+        // Render Sidebar Team List
+        function renderTeamList() {
+            const container = document.getElementById('teamList');
+            container.innerHTML = '';
+
+            teams.forEach((team, idx) => {
+                const isActive = idx === activeTeamIndex;
+                const card = document.createElement('div');
+                card.className = `p-2 rounded-xl border-2 flex items-center justify-between transition ${isActive ? 'bg-amber-50 border-amber-400 font-bold shadow-sm' : 'bg-slate-50 border-slate-200'}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-2 cursor-pointer flex-grow" onclick="setActiveTeam(${idx})">
+                        <div class="w-6 h-6 rounded-full ${team.colorObj.color} text-white flex items-center justify-center text-[10px] comic-border shrink-0">
+                            <i class="fa-solid ${team.colorObj.icon}"></i>
+                        </div>
+                        <div class="truncate">
+                            <span class="text-xs text-slate-800 block truncate">${team.name}</span>
+                            <span class="text-[10px] text-slate-500 block leading-none">Kotak No. ${team.step}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        ${isActive ? '<span class="text-[9px] bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded comic-border font-bold">Giliran</span>' : ''}
+                        ${teams.length > 1 ? `<button onclick="removeTeam('${team.id}')" class="text-slate-400 hover:text-rose-500 p-1 text-xs" title="Hapus Kelompok"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('turnCounter').innerText = `Tim ${activeTeamIndex + 1} / ${teams.length}`;
+        }
+
+        function updateUIControls() {
+            const activeTeam = teams[activeTeamIndex];
+            if (!activeTeam) return;
+
+            // Update banner title
+            const nameElem = document.getElementById('currentTeamName');
+            nameElem.innerText = activeTeam.name;
+            nameElem.className = `${activeTeam.colorObj.text} font-extrabold underline decoration-wavy`;
+
+            // Update step instruction banner & jump select dropdown value
+            const stepText = STEP_DESCRIPTIONS[activeTeam.step] || `Kotak ${activeTeam.step}`;
+            document.getElementById('activeStepText').innerText = stepText;
+            document.getElementById('stepJumpSelect').value = activeTeam.step.toString();
+
+            renderTeamList();
+        }
+
+        function moveActiveTeam(delta) {
+            const activeTeam = teams[activeTeamIndex];
+            let newStep = activeTeam.step + delta;
+            
+            // Step 10 jumps to 12 directly
+            if (activeTeam.step === 10 && delta === 1) newStep = 12;
+            if (activeTeam.step === 12 && delta === -1) newStep = 10;
+
+            if (newStep < 1) newStep = 1;
+            if (newStep > 12) newStep = 12;
+
+            if (newStep !== activeTeam.step) {
+                activeTeam.step = newStep;
+                playSound(newStep === 12 ? 'win' : 'move');
+                renderBoardPawns();
+            }
+        }
+
+        function jumpActiveTeamToStep(targetStep) {
+            const activeTeam = teams[activeTeamIndex];
+            if (activeTeam && activeTeam.step !== targetStep) {
+                activeTeam.step = targetStep;
+                playSound(targetStep === 12 ? 'win' : 'move');
+                renderBoardPawns();
+            }
+        }
+
+        function setActiveTeam(index) {
+            if (index >= 0 && index < teams.length) {
+                activeTeamIndex = index;
+                playSound('turn');
+                renderBoardPawns();
+            }
+        }
+
+        function passTurn() {
+            activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+            playSound('turn');
+            renderBoardPawns();
+        }
+
+        function addTeam() {
+            if (teams.length >= 8) {
+                alert('Maksimal 8 kelompok dapat bermain bersamaan.');
+                return;
+            }
+            const colorObj = ALL_TEAM_PRESETS[teams.length];
+            const newTeam = {
+                id: colorObj.id,
+                name: colorObj.name,
+                step: 1,
+                colorObj: colorObj
+            };
+            teams.push(newTeam);
+            renderBoardPawns();
+        }
+
+        function removeTeam(id) {
+            if (teams.length <= 1) return;
+            teams = teams.filter(t => t.id !== id);
+            if (activeTeamIndex >= teams.length) {
+                activeTeamIndex = 0;
+            }
+            renderBoardPawns();
+        }
+
+        // Setup Board Step Click & Drag/Drop Handlers
+        function setupBoardInteractions() {
+            const stepNodes = document.querySelectorAll('.step-node');
+
+            stepNodes.forEach(node => {
+                const stepNum = parseInt(node.getAttribute('data-step'));
+
+                // Click step to move active pawn
+                node.addEventListener('click', (e) => {
+                    if (e.target.closest('button')) return;
+
+                    const activeTeam = teams[activeTeamIndex];
+                    if (activeTeam && activeTeam.step !== stepNum) {
+                        activeTeam.step = stepNum;
+                        playSound(stepNum === 12 ? 'win' : 'move');
+                        renderBoardPawns();
+                    }
+                });
+
+                // Drag over support
+                node.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    node.classList.add('bg-amber-100');
+                });
+
+                node.addEventListener('dragleave', () => {
+                    node.classList.remove('bg-amber-100');
+                });
+
+                node.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    node.classList.remove('bg-amber-100');
+                    const teamId = e.dataTransfer.getData('text/plain');
+                    const targetTeam = teams.find(t => t.id === teamId);
+                    if (targetTeam) {
+                        targetTeam.step = stepNum;
+                        playSound(stepNum === 12 ? 'win' : 'move');
+                        renderBoardPawns();
+                    }
+                });
+            });
+        }
+
+        // UI Event Listeners
+        document.getElementById('btnNext').addEventListener('click', () => moveActiveTeam(1));
+        document.getElementById('btnPrev').addEventListener('click', () => moveActiveTeam(-1));
+        document.getElementById('btnPassTurn').addEventListener('click', passTurn);
+        document.getElementById('btnAddTeam').addEventListener('click', addTeam);
+
+        document.getElementById('stepJumpSelect').addEventListener('change', (e) => {
+            const targetStep = parseInt(e.target.value);
+            jumpActiveTeamToStep(targetStep);
+        });
+
+        document.getElementById('btnResetAll').addEventListener('click', () => {
+            teams.forEach(t => t.step = 1);
+            activeTeamIndex = 0;
+            playSound('turn');
+            renderBoardPawns();
+        });
+
+        // Initialize on window load
+        window.onload = () => {
+            setupBoardInteractions();
+            renderBoardPawns();
+        };
+    </script>
+
+</body></html>
